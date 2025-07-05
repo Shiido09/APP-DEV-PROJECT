@@ -1,6 +1,13 @@
 
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Heart, User, Menu, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ShoppingCart, Heart, User, Menu, X, UserCircle, ShoppingBag, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 
@@ -63,11 +70,32 @@ const Navigation = () => {
                 </span>
               </Button>
             </Link>
-            <Link to="/profile">
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-red-600">
-                <User className="w-5 h-5" />
-              </Button>
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-red-600">
+                  <User className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="flex items-center cursor-pointer">
+                    <UserCircle className="w-4 h-4 mr-2" />
+                    My Account
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/profile?tab=purchase" className="flex items-center cursor-pointer">
+                    <ShoppingBag className="w-4 h-4 mr-2" />
+                    My Purchase
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="flex items-center cursor-pointer text-red-600 focus:text-red-600">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Mobile Menu Button */}
@@ -116,11 +144,30 @@ const Navigation = () => {
               ))}
               <Link
                 to="/profile"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md"
+                className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Profile
+                <UserCircle className="w-5 h-5 mr-2" />
+                My Account
               </Link>
+              <Link
+                to="/profile?tab=purchase"
+                className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <ShoppingBag className="w-5 h-5 mr-2" />
+                My Purchase
+              </Link>
+              <button
+                className="flex items-center w-full px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  // Add logout logic here
+                }}
+              >
+                <LogOut className="w-5 h-5 mr-2" />
+                Logout
+              </button>
             </div>
           </div>
         )}

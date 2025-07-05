@@ -97,7 +97,7 @@ const Hero = () => {
             
             {/* Color progress bar */}
             <div className="absolute bottom-4 left-4 right-4 lg:left-8 lg:right-16 z-20">
-              <div className="bg-gradient-to-r from-red-400 via-orange-400 via-yellow-400 to-green-500 h-2 rounded-full relative">
+              <div className="bg-gradient-to-r from-red-400 via-yellow-400 to-green-500 h-2 rounded-full relative">
                 <div className="absolute top-1/2 left-1/2 transform -translate-y-1/2 bg-white w-8 h-8 rounded-full shadow-md flex items-center justify-center">
                   <span className="text-xs font-bold text-gray-800">3°</span>
                 </div>
