@@ -1,12 +1,54 @@
 
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Heart, User, Menu, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { ShoppingCart, Heart, User, Menu, X, LogOut } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { auth } from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
 
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Check authentication status
+    const checkAuth = () => {
+      const isAuth = auth.isAuthenticated();
+      const userData = auth.getUserData();
+      setIsAuthenticated(isAuth);
+      setUser(userData);
+    };
+
+    checkAuth();
+    
+    // Listen for storage changes (login/logout from other tabs)
+    window.addEventListener('storage', checkAuth);
+    
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    const userName = user?.name || 'User';
+    
+    auth.logout();
+    setIsAuthenticated(false);
+    setUser(null);
+    
+    // Show logout success toast
+    toast({
+      title: "Logout Successful! 👋",
+      description: `Goodbye ${userName}! You have been successfully logged out. See you again soon!`,
+      duration: 4000,
+    });
+    
+    navigate('/');
+  };
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -63,11 +105,37 @@ const Navigation = () => {
                 </span>
               </Button>
             </Link>
-            <Link to="/profile">
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-red-600">
-                <User className="w-5 h-5" />
-              </Button>
-            </Link>
+            
+            {isAuthenticated ? (
+              <>
+                <Link to="/profile">
+                  <Button variant="ghost" size="sm" className="text-gray-600 hover:text-red-600">
+                    <User className="w-5 h-5" />
+                  </Button>
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleLogout}
+                  className="text-gray-600 hover:text-red-600"
+                >
+                  <LogOut className="w-5 h-5" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm" className="text-gray-600 hover:text-red-600">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -114,13 +182,44 @@ const Navigation = () => {
                   {item.name}
                 </Link>
               ))}
-              <Link
-                to="/profile"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Profile
-              </Link>
+              
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/profile"
+                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="block px-3 py-2 text-base font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}

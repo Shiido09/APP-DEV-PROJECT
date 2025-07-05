@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'admin', 'farmer'],
+        enum: ['user', 'admin'],
         default: 'user'
     },
     createdAt: {
@@ -41,9 +41,15 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     profilePicture: {
-        type: String,
-        required: false,
-    },
+            public_id: {
+                type: String,
+                required: false,
+            },
+            url: {
+                type: String,
+                required: false,
+            },
+        },
     ewallets: [
         {
           type: mongoose.Schema.Types.ObjectId,

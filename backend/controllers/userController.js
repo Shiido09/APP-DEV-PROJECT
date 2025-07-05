@@ -11,6 +11,12 @@ const generateToken = (userId) => {
 // Register User
 const registerUser = async (req, res) => {
     try {
+        console.log('=== REGISTER USER REQUEST ===');
+        console.log('Request body:', req.body);
+        console.log('Request file:', req.file);
+        console.log('Body keys:', Object.keys(req.body));
+        console.log('Content-Type:', req.headers['content-type']);
+        
         const { 
             name, 
             email, 
@@ -21,8 +27,19 @@ const registerUser = async (req, res) => {
             role = 'user' 
         } = req.body;
 
+        console.log('Extracted fields:', {
+            name,
+            email,
+            address,
+            phone_number,
+            password: password ? '[PROVIDED]' : '[MISSING]',
+            gender,
+            role
+        });
+
         // Validation
         if (!name || !email || !address || !phone_number || !password || !gender) {
+            console.log('Validation failed - missing fields');
             return res.status(400).json({
                 success: false,
                 message: 'All fields are required'
@@ -54,9 +71,32 @@ const registerUser = async (req, res) => {
             });
         }
 
+        // Handle optional profile picture upload
+        let profilePicture = {};
+        if (req.file) {
+            console.log('File uploaded:', req.file);
+            profilePicture = {
+                public_id: req.file.public_id || req.file.filename,
+                url: req.file.secure_url || req.file.path
+            };
+            console.log('Profile picture object:', profilePicture);
+        }
+
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Log user data before creation
+        console.log('Creating user with data:', {
+            name,
+            email,
+            address,
+            phone_number,
+            gender,
+            role,
+            profilePicture,
+            hasProfilePicture: !!req.file
+        });
 
         // Create user
         const user = new User({
@@ -66,10 +106,13 @@ const registerUser = async (req, res) => {
             phone_number,
             password: hashedPassword,
             gender,
-            role
+            role,
+            profilePicture
         });
 
+        console.log('User object before save:', user);
         await user.save();
+        console.log('User saved successfully with ID:', user._id);
 
         // Generate token
         const token = generateToken(user._id);
@@ -89,12 +132,19 @@ const registerUser = async (req, res) => {
 
     } catch (error) {
         console.error('Registration error:', error);
+        console.error('Error stack:', error.stack);
+        console.error('Error message:', error.message);
+        console.error('Request body:', req.body);
+        console.error('Request file:', req.file);
+        
         res.status(500).json({
             success: false,
-            message: 'Server error during registration'
+            message: 'Server error during registration',
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
         });
     }
 };
+
 
 // Login User
 const loginUser = async (req, res) => {

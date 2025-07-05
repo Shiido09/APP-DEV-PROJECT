@@ -1,18 +1,34 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config(); // Load .env again just in case
-const connectDB = require('./config/database'); // Import the database connection
+require('dotenv').config();
+const connectDB = require('./config/database');
 
 // Import routes
 const userRoutes = require('./routes/userRoutes');
 
-connectDB(); // Connect to MongoDB
+connectDB();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
-// Routes
+// CORS middleware - must be first
+app.use(cors({
+  origin: ['http://localhost:8080', 'http://localhost:3000'], // Add your frontend URLs
+  credentials: true
+}));
+
+// Basic logging middleware (before body parsing)
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  console.log('Content-Type:', req.headers['content-type']);
+  console.log('Content-Length:', req.headers['content-length']);
+  next();
+});
+
+// Body parsing middleware - for non-multipart requests
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Routes (multer middleware will handle multipart/form-data)
 app.use('/api/users', userRoutes);
 
 const PORT = process.env.PORT || 5000;
